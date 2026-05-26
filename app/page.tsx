@@ -9,23 +9,52 @@ export default function Home() {
           <div style={styles.badge}>LIC PRINT SHOP</div>
 
           <h1 style={styles.title}>
-            Print service made
+            BIR Receipts & Invoices
             <br />
-            simple and reliable.
+            Made Simple
           </h1>
 
           <p style={styles.subtitle}>
             A polished help desk for fast printing requests, order tracking, and updates from LIC Print Shop.
           </p>
+
+          <p style={styles.trustLine}>
+            BIR-accredited • Hassle-free • Fast updates
+          </p>
         </section>
 
         <a href="/order" style={styles.primaryButton}>
           <div>
-            <div style={styles.primaryTitle}>Place an order</div>
+            <div style={styles.primaryTitle}>Order BIR Receipts & Invoice</div>
             <div style={styles.primaryDesc}>Submit details and get a quick quote</div>
           </div>
           <span style={styles.arrow}>→</span>
         </a>
+
+        <section style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionLabel}>How to place an order</div>
+            <div style={styles.sectionNote}>Follow these simple steps</div>
+          </div>
+
+          <div style={styles.guideCard}>
+            <div style={styles.guideStep}>
+              <strong>1.</strong> Click <em>Place an order</em> and fill in your business details, contact info, and printing options.
+            </div>
+            <div style={styles.guideStep}>
+              <strong>2.</strong> Choose whether your order has an <strong>ATP</strong> (Authorization to Print).
+            </div>
+            <div style={styles.guideNote}>
+              If your order <strong>has ATP</strong>, you can complete the request online and attach any proof documents.
+            </div>
+            <div style={styles.guideNote}>
+              If your order <strong>does not have ATP</strong>, you must rely on a <strong>walk-in</strong> visit to the store for verification before printing can begin.
+            </div>
+            <div style={styles.guideStep}>
+              <strong>3.</strong> Submit your request and use the order ID to track progress on the Track page.
+            </div>
+          </div>
+        </section>
 
         <section style={styles.section}>
           <div style={styles.sectionHeader}>
@@ -152,6 +181,14 @@ const styles: any = {
     maxWidth: "42rem"
   },
 
+  trustLine: {
+    marginTop: "14px",
+    color: "rgba(226,232,240,0.72)",
+    fontSize: "0.95rem",
+    lineHeight: 1.7,
+    letterSpacing: "0.02em"
+  },
+
   primaryButton: {
     display: "flex",
     justifyContent: "space-between",
@@ -208,7 +245,7 @@ const styles: any = {
 
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
     gap: "16px"
   },
 
@@ -250,6 +287,31 @@ const styles: any = {
   statusContainer: {
     display: "grid",
     gap: "14px"
+  },
+
+  guideCard: {
+    display: "grid",
+    gap: "14px",
+    padding: "22px",
+    borderRadius: "24px",
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    marginBottom: "24px"
+  },
+
+  guideStep: {
+    color: "#e2e8f0",
+    fontSize: "0.96rem",
+    lineHeight: 1.7,
+  },
+
+  guideNote: {
+    color: "rgba(226,232,240,0.82)",
+    fontSize: "0.94rem",
+    lineHeight: 1.7,
+    paddingLeft: "16px",
+    borderLeft: "3px solid rgba(99,102,241,0.7)",
+    marginBottom: "0px"
   },
 
   statusCard: {

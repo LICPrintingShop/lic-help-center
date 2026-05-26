@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import os from "os";
 import path from "path";
 
 export type OrderRecord = {
@@ -18,7 +19,11 @@ export type OrderRecord = {
   updatedAt: string;
 };
 
-const ordersPath = path.join(process.cwd(), "data", "orders.json");
+const ordersPath = process.env.ORDER_DB_PATH
+  ? path.resolve(process.env.ORDER_DB_PATH)
+  : process.env.VERCEL
+  ? path.join(os.tmpdir(), "lic-help-center-orders.json")
+  : path.join(process.cwd(), "data", "orders.json");
 
 async function ensureOrdersFile() {
   try {
