@@ -2,19 +2,52 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Copy the example environment file:
+
+```bash
+copy .env.local.example .env.local
+```
+
+3. Open `.env.local` and fill in your real values:
+
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `SMTP_FROM`
+- `ZAPIER_WEBHOOK_URL`
+
+4. Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+If PowerShell blocks `npm.ps1`, use this command instead:
+
+```bash
+cmd /c "npm run dev"
+```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Run on another computer
+
+If you move this project to another computer, the structure stays the same as long as you:
+
+- copy or clone the project folder
+- run `npm install`
+- copy `.env.local.example` to `.env.local`
+- fill in the real environment values
+- run `npm run dev`
+
+This keeps the same file layout and lets the app work exactly the same way on the other computer.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
