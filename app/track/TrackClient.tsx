@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ORDER_STAGES } from "@/lib/orderStore";
+import type { OrderStage } from "@/lib/orderStore";
 
 type OrderResult = {
   orderId: string;
@@ -13,20 +15,13 @@ type OrderResult = {
   email: string;
   printingOption: string;
   status: string;
-  stage: string;
+  stage: OrderStage;
   proofFileName: string;
   createdAt: string;
   updatedAt: string;
 };
 
-const STAGES = [
-  "PRE-PRINTING STAGE",
-  "RUNNING STAGE",
-  "COLLATING STAGE",
-  "STAPLING/PADDING STAGE",
-  "BROWNING STAGE",
-  "PACKAGING STAGE",
-];
+const STAGES = ORDER_STAGES;
 
 export default function TrackClient({
   initialOrderId,
@@ -79,93 +74,171 @@ export default function TrackClient({
   }
 
   return (
-    <main style={styles.page}>
-      <div style={styles.container}>
-        <div style={styles.navRow}>
-          <a href="/" style={styles.homeButton}>
-            <span style={styles.homeLogo}>🏠</span>
+    <main className="min-h-screen bg-slate-950 text-slate-100 px-4 py-10">
+      <div className="mx-auto max-w-3xl rounded-[28px] border border-slate-800 bg-slate-950/95 p-8 shadow-[0_28px_70px_rgba(0,0,0,0.4)]">
+        <div className="mb-8 flex items-center gap-3">
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-slate-800"
+          >
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 text-base">
+              🏠
+            </span>
             LIC PRINT SHOP
           </a>
         </div>
 
-        <div style={styles.header}>
-          <div style={styles.badge}>LIC PRINT SHOP</div>
-          <h1 style={styles.title}>Track your order</h1>
-          <p style={styles.subtitle}>
-            Enter your order number and get the latest delivery status.
-          </p>
+        <div className="mb-8 space-y-4">
+          <div className="inline-flex rounded-full bg-indigo-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">
+            LIC PRINT SHOP
+          </div>
+          <div>
+            <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+              Track your order
+            </h1>
+            <p className="mt-3 max-w-2xl text-slate-300">
+              Enter your order number and view the current stage from Trello.
+            </p>
+          </div>
         </div>
 
         {order ? (
-          <div style={styles.resultCard}>
-            <div style={styles.resultStatus}>{order.status}</div>
-            <div style={styles.resultLabel}>Order ID</div>
-            <div style={styles.resultValue}>{order.orderId}</div>
+          <div className="space-y-8">
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.24em] text-slate-500">
+                    Order ID
+                  </p>
+                  <p className="text-lg font-semibold text-white">
+                    {order.orderId}
+                  </p>
+                </div>
+                <span className="rounded-full bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200">
+                  {order.status.toUpperCase()}
+                </span>
+              </div>
 
-            <div style={styles.stageBadge}>{order.stage}</div>
-            <div style={styles.stageTimeline}>
-              {STAGES.map((stage) => {
-                const active = stage === order.stage;
-                const completed =
-                  STAGES.indexOf(stage) <= STAGES.indexOf(order.stage);
-                return (
-                  <div key={stage} style={styles.stageItem}>
-                    <div
-                      style={
-                        completed ? styles.stageDotActive : styles.stageDot
-                      }
-                    />
-                    <div style={styles.stageEntry}>
-                      <div style={styles.stageTitle}>{stage}</div>
-                      {active ? (
-                        <div style={styles.stageSubtitle}>Current stage</div>
-                      ) : null}
-                    </div>
+              <div className="mt-6 rounded-3xl bg-slate-950/70 p-5 shadow-inner shadow-slate-950/20">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.24em] text-slate-500">
+                      Current stage
+                    </p>
+                    <p className="text-2xl font-bold text-white">
+                      {order.stage}
+                    </p>
                   </div>
-                );
-              })}
+                  {order.stage === "PACKAGING STAGE" ? (
+                    <div className="rounded-2xl bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300">
+                      Order Completed
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
 
-            <div style={styles.resultField}>
-              <span style={styles.fieldName}>Trade name</span>
-              <span>{order.tradeName}</span>
-            </div>
-            <div style={styles.resultField}>
-              <span style={styles.fieldName}>Entity type</span>
-              <span>{order.entityType}</span>
-            </div>
-            <div style={styles.resultField}>
-              <span style={styles.fieldName}>Payment status</span>
-              <span>{order.status}</span>
-            </div>
-            <div style={styles.resultField}>
-              <span style={styles.fieldName}>Proof file</span>
-              <span>{order.proofFileName}</span>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6">
+              <div className="grid gap-5">
+                {STAGES.map((stage, index) => {
+                  const orderIndex = STAGES.indexOf(order.stage);
+                  const completed = index < orderIndex;
+                  const active = index === orderIndex;
+                  const inactive = index > orderIndex;
+                  return (
+                    <div key={stage} className="flex items-start gap-4">
+                      <div className="relative flex h-10 w-10 flex-none items-center justify-center rounded-full border text-sm font-semibold">
+                        {completed ? (
+                          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-slate-950">
+                            ✓
+                          </span>
+                        ) : active ? (
+                          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400 bg-amber-400/10 text-amber-300">
+                            ●
+                          </span>
+                        ) : (
+                          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-slate-500">
+                            ○
+                          </span>
+                        )}
+                        {index < STAGES.length - 1 ? (
+                          <span
+                            className={`absolute left-1/2 top-full h-8 w-px -translate-x-1/2 bg-slate-700 ${inactive ? "opacity-40" : "opacity-100"}`}
+                          />
+                        ) : null}
+                      </div>
+                      <div>
+                        <p className={`text-base font-semibold ${active ? "text-white" : completed ? "text-slate-300" : "text-slate-500"}`}>
+                          {stage}
+                        </p>
+                        {active ? (
+                          <p className="mt-1 text-sm text-amber-300">Current stage</p>
+                        ) : completed ? (
+                          <p className="mt-1 text-sm text-slate-400">Completed</p>
+                        ) : (
+                          <p className="mt-1 text-sm text-slate-500">Upcoming</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            <p style={styles.resultText}>
-              Your request is stored in the built-in database. Use this same
-              order number anytime to look up the status.
-            </p>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Trade name</p>
+                  <p className="text-sm text-slate-100">{order.tradeName}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Entity type</p>
+                  <p className="text-sm text-slate-100">{order.entityType}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Payment status</p>
+                  <p className="text-sm text-slate-100">{order.status}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Proof file</p>
+                  <p className="text-sm text-slate-100">{order.proofFileName}</p>
+                </div>
+              </div>
+            </div>
 
-            <a href="/order" style={styles.backLink}>
-              Submit another order
-            </a>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm leading-6 text-slate-400">
+                Your order is stored in the built-in database. Use the same tracking number anytime.
+              </p>
+              <a
+                href="/order"
+                className="inline-flex items-center justify-center rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-indigo-400"
+              >
+                Submit another order
+              </a>
+            </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.group}>
-              <label style={styles.label}>Order number</label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-3">
+              <label htmlFor="trackingId" className="block text-sm font-semibold text-slate-200">
+                Order number
+              </label>
               <input
+                id="trackingId"
                 value={trackingId}
                 onChange={(e) => setTrackingId(e.target.value)}
                 placeholder="e.g. LIC-1234-456"
-                style={styles.input}
+                className="w-full rounded-3xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
               />
-              {error ? <div style={styles.error}>{error}</div> : null}
+              {error ? <p className="text-sm text-rose-400">{error}</p> : null}
             </div>
 
-            <button type="submit" style={styles.button}>
+            <button
+              type="submit"
+              className="w-full rounded-3xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={loading}
+            >
               {loading ? "Searching..." : "Track order"}
             </button>
           </form>
@@ -174,206 +247,3 @@ export default function TrackClient({
     </main>
   );
 }
-
-const styles: any = {
-  page: {
-    minHeight: "100vh",
-    background: "#090b12",
-    color: "#f8fafc",
-    display: "flex",
-    justifyContent: "center",
-    padding: "40px 20px",
-    fontFamily: "Inter, Arial, sans-serif",
-  },
-  container: {
-    width: "100%",
-    maxWidth: "560px",
-    background: "rgba(15,23,42,0.92)",
-    border: "1px solid rgba(148,163,184,0.12)",
-    borderRadius: "30px",
-    padding: "32px",
-    boxShadow: "0 28px 70px rgba(0,0,0,0.28)",
-  },
-  navRow: {
-    display: "flex",
-    justifyContent: "flex-start",
-    marginBottom: "24px",
-  },
-  homeButton: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "12px 16px",
-    borderRadius: "999px",
-    background: "rgba(255,255,255,0.08)",
-    color: "#ffffff",
-    textDecoration: "none",
-    fontWeight: 700,
-    border: "1px solid rgba(255,255,255,0.12)",
-  },
-  homeLogo: {
-    display: "inline-flex",
-    width: "26px",
-    height: "26px",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "50%",
-    background: "rgba(255,255,255,0.12)",
-    fontSize: "0.95rem",
-  },
-  header: {
-    marginBottom: "26px",
-  },
-  badge: {
-    display: "inline-flex",
-    alignItems: "center",
-    padding: "8px 14px",
-    borderRadius: "999px",
-    background: "rgba(99,102,241,0.15)",
-    color: "#c7d2fe",
-    fontSize: "12px",
-    fontWeight: 700,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
-    marginBottom: "16px",
-    border: "1px solid rgba(99,102,241,0.25)",
-  },
-  title: {
-    fontSize: "2.6rem",
-    lineHeight: 1.05,
-    margin: 0,
-    fontWeight: 800,
-  },
-  subtitle: {
-    marginTop: "14px",
-    color: "rgba(226,232,240,0.78)",
-    fontSize: "1rem",
-    lineHeight: 1.7,
-    maxWidth: "42rem",
-  },
-  form: {
-    display: "grid",
-    gap: "18px",
-  },
-  group: {
-    display: "grid",
-    gap: "10px",
-  },
-  label: {
-    fontSize: "0.85rem",
-    color: "rgba(226,232,240,0.8)",
-  },
-  input: {
-    width: "100%",
-    padding: "15px",
-    borderRadius: "16px",
-    border: "1px solid rgba(148,163,184,0.18)",
-    background: "#0f172a",
-    color: "#ffffff",
-    fontSize: "14px",
-    outline: "none",
-  },
-  button: {
-    width: "100%",
-    padding: "16px",
-    borderRadius: "18px",
-    border: "none",
-    background: "#6366f1",
-    color: "#ffffff",
-    fontWeight: 700,
-    cursor: "pointer",
-    fontSize: "15px",
-  },
-  error: {
-    color: "#fca5a5",
-    fontSize: "0.9rem",
-  },
-  resultCard: {
-    display: "grid",
-    gap: "18px",
-  },
-  resultStatus: {
-    textTransform: "uppercase",
-    color: "#c7d2fe",
-    fontWeight: 700,
-    letterSpacing: "0.18em",
-  },
-  resultLabel: {
-    fontSize: "0.85rem",
-    color: "rgba(226,232,240,0.75)",
-    textTransform: "uppercase",
-    letterSpacing: "0.14em",
-  },
-  resultValue: {
-    fontSize: "1.75rem",
-    fontWeight: 800,
-  },
-  stageBadge: {
-    display: "inline-flex",
-    padding: "10px 16px",
-    borderRadius: "999px",
-    background: "rgba(99,102,241,0.12)",
-    color: "#c7d2fe",
-    fontWeight: 700,
-    width: "fit-content",
-  },
-  stageTimeline: {
-    display: "grid",
-    gap: "16px",
-  },
-  stageItem: {
-    display: "flex",
-    gap: "14px",
-    alignItems: "flex-start",
-  },
-  stageDot: {
-    width: "16px",
-    height: "16px",
-    borderRadius: "50%",
-    background: "rgba(148,163,184,0.35)",
-    marginTop: "6px",
-  },
-  stageDotActive: {
-    width: "16px",
-    height: "16px",
-    borderRadius: "50%",
-    background: "#7c3aed",
-    marginTop: "6px",
-  },
-  stageEntry: {
-    display: "grid",
-    gap: "4px",
-  },
-  stageTitle: {
-    fontWeight: 700,
-  },
-  stageSubtitle: {
-    color: "rgba(226,232,240,0.65)",
-    fontSize: "0.95rem",
-  },
-  resultField: {
-    display: "grid",
-    gap: "6px",
-    background: "rgba(148,163,184,0.08)",
-    padding: "16px",
-    borderRadius: "20px",
-  },
-  fieldName: {
-    fontSize: "0.85rem",
-    color: "rgba(226,232,240,0.65)",
-  },
-  resultText: {
-    color: "rgba(226,232,240,0.78)",
-    lineHeight: 1.7,
-  },
-  backLink: {
-    display: "inline-flex",
-    padding: "14px 18px",
-    borderRadius: "16px",
-    background: "rgba(255,255,255,0.08)",
-    color: "#ffffff",
-    textDecoration: "none",
-    justifyContent: "center",
-    fontWeight: 700,
-  },
-};

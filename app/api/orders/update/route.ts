@@ -1,31 +1,122 @@
 import { NextResponse } from "next/server";
-import { updateOrderStage } from "@/lib/orderStore";
+import {
+  ORDER_STAGES,
+  getCurrentStageFromCheckedItems,
+  normalizeStage,
+  updateOrderStage,
+} from "@/lib/orderStore";
+
+function extractOrderId(payload: any): string {
+  const candidates = [
+    payload.orderId,
+    payload.order_id,
+    payload["order id"],
+    payload["Order Id"],
+    payload["OrderID"],
+    payload.cardName,
+    payload.card_name,
+    payload.card?.name,
+    payload.row?.orderId,
+    payload.row?.order_id,
+    payload.row?.["Order Id"],
+    payload.data?.orderId,
+    payload.data?.order_id,
+    payload.inputData?.orderId,
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const value = String(candidate).trim();
+    if (!value) continue;
+    return value.split(" - ")[0].trim();
+  }
+
+  return "";
+}
+
+function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return [value.trim()].filter(Boolean);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.values(value)
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function extractCheckedStages(payload: any): string[] {
+  const candidates = [
+    payload.checkedStages,
+    payload.checked_items,
+    payload.checkedItems,
+    payload.checklist,
+    payload.checklistItems,
+    payload.checklist_items,
+    payload.row?.checkedStages,
+    payload.data?.checkedStages,
+    payload.inputData?.checkedStages,
+    payload.row?.checklist,
+    payload.data?.checklist,
+    payload.inputData?.checklist,
+  ];
+
+  return candidates.flatMap(toStringArray);
+}
+
+function extractStage(payload: any): string {
+  const candidates = [
+    payload.stage,
+    payload.listName,
+    payload.list_name,
+    payload.list,
+    payload.status,
+    payload["Stage"],
+    payload["stage"],
+    payload.row?.stage,
+    payload.row?.["Stage"],
+    payload.row?.["stage"],
+    payload.data?.stage,
+    payload.data?.["Stage"],
+    payload.inputData?.stage,
+    payload.inputData?.["Stage"],
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate == null) continue;
+    const value = String(candidate).trim();
+    if (value) return value;
+  }
+
+  return "";
+}
 
 async function handleUpdateRequest(body: any) {
-  const rawOrderId = body.orderId || body.cardName || "";
-  const orderId = String(rawOrderId).trim().split(" - ")[0];
-  const stage = body.stage;
+  const orderId = extractOrderId(body);
+  const rawStage = extractStage(body);
+  const checkedStages = extractCheckedStages(body);
+  const stage = checkedStages.length
+    ? getCurrentStageFromCheckedItems(checkedStages)
+    : normalizeStage(rawStage);
 
-  if (!orderId || !stage) {
+  if (!orderId || (!rawStage && !checkedStages.length)) {
     return NextResponse.json(
       { error: "orderId and stage are required" },
       { status: 400 }
     );
   }
 
-  const validStages = [
-    "PRE-PRINTING STAGE",
-    "RUNNING STAGE",
-    "COLLATING STAGE",
-    "STAPLING/PADDING STAGE",
-    "BROWNING STAGE",
-    "PACKAGING STAGE",
-  ];
-
-  if (!validStages.includes(stage)) {
+  if (!ORDER_STAGES.includes(stage as any)) {
     return NextResponse.json(
       {
-        error: `Invalid stage. Must be one of: ${validStages.join(", ")}`,
+        error: `Invalid stage. Must be one of: ${ORDER_STAGES.join(", ")}`,
       },
       { status: 400 }
     );
@@ -40,7 +131,6 @@ async function handleUpdateRequest(body: any) {
     );
   }
 
-  // Send data to Zapier webhook and log response for debugging
   if (process.env.ZAPIER_WEBHOOK_URL) {
     try {
       const resp = await fetch(process.env.ZAPIER_WEBHOOK_URL, {
