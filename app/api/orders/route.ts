@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       email: String(body.email),
       printingOption: String(body.printingOption),
       status: String(body.status),
-      stage: normalizeStage(String(body.stage || "PRE-PRINTING STAGE")),
+      stage: normalizeStage(String(body.stage || "")),
       proofFileName: String(body.proofFileName || "No proof uploaded"),
     });
 

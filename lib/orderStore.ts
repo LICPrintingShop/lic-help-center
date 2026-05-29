@@ -22,22 +22,34 @@ export type OrderRecord = {
 };
 
 const STAGE_ALIASES: Record<string, OrderStage> = {
-  "pre-printing": "PRE-PRINTING STAGE",
-  "pre printing": "PRE-PRINTING STAGE",
-  "pre-printing stage": "PRE-PRINTING STAGE",
-  "pre printing stage": "PRE-PRINTING STAGE",
-  "running": "RUNNING STAGE",
-  "running stage": "RUNNING STAGE",
-  "collating": "COLLATING STAGE",
-  "collating stage": "COLLATING STAGE",
-  "stapling/padding": "STAPLING/PADDING STAGE",
-  "stapling": "STAPLING/PADDING STAGE",
-  "padding": "STAPLING/PADDING STAGE",
-  "stapling/padding stage": "STAPLING/PADDING STAGE",
-  "browning": "BROWNING STAGE",
-  "browning stage": "BROWNING STAGE",
-  "packaging": "PACKAGING STAGE",
-  "packaging stage": "PACKAGING STAGE",
+  "station 3 (payments and invoice)": "STATION 3 ( PAYMENTS AND INVOICE)",
+  "station 3 ( payments and invoice)": "STATION 3 ( PAYMENTS AND INVOICE)",
+  "station 3": "STATION 3 ( PAYMENTS AND INVOICE)",
+  "payments and invoice": "STATION 3 ( PAYMENTS AND INVOICE)",
+  "hold with problems": "HOLD WITH PROBLEMS",
+  "layouting": "LAYOUTING",
+  "pre-print fomatting": "PRE-PRINT FOMATTING",
+  "pre-print formatting": "PRE-PRINT FOMATTING",
+  "pre print formatting": "PRE-PRINT FOMATTING",
+  "numbering": "NUMBERING",
+  "running": "RUNNING",
+  "collating": "COLLATING",
+  "cutting & trimming": "CUTTING & TRIMMING",
+  "cutting and trimming": "CUTTING & TRIMMING",
+  "stapling & browning": "STAPLING & BROWNING",
+  "stapling and browning": "STAPLING & BROWNING",
+  "labelling & packaging": "LABELLING & PACKAGING",
+  "labelling and packaging": "LABELLING & PACKAGING",
+  "finish receipt": "FINISH RECEIPT",
+  "ready for release": "READY FOR RELEASE",
+  "pre-printing stage": "STATION 3 ( PAYMENTS AND INVOICE)",
+  "running stage": "RUNNING",
+  "collating stage": "COLLATING",
+  "stapling/padding stage": "STAPLING & BROWNING",
+  "stapling": "STAPLING & BROWNING",
+  "padding": "STAPLING & BROWNING",
+  "browning": "STAPLING & BROWNING",
+  "packaging": "LABELLING & PACKAGING",
 };
 
 const ordersPath = process.env.ORDER_DB_PATH
@@ -71,7 +83,7 @@ export function normalizeStage(stage: string): OrderStage {
   const lower = cleaned.toLowerCase();
 
   if (!cleaned) {
-    return "PRE-PRINTING STAGE";
+    return ORDER_STAGES[0];
   }
 
   if (isOrderStage(cleaned)) {
@@ -82,12 +94,12 @@ export function normalizeStage(stage: string): OrderStage {
     return STAGE_ALIASES[lower];
   }
 
-  return "PRE-PRINTING STAGE";
+  return ORDER_STAGES[0];
 }
 
 export function getCurrentStageFromCheckedItems(items: Array<string | undefined> | undefined): OrderStage {
   if (!items?.length) {
-    return "PRE-PRINTING STAGE";
+    return ORDER_STAGES[0];
   }
 
   const validStages = items
@@ -95,7 +107,7 @@ export function getCurrentStageFromCheckedItems(items: Array<string | undefined>
     .filter(isOrderStage);
 
   if (!validStages.length) {
-    return "PRE-PRINTING STAGE";
+    return ORDER_STAGES[0];
   }
 
   return validStages.reduce((current, next) => {

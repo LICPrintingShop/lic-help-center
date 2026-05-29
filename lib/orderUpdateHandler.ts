@@ -143,42 +143,7 @@ function extractStage(payload: any): string {
 }
 
 function normalizeStageName(rawStage: string): string {
-  const cleaned = normalizeStage(rawStage);
-  if (ORDER_STAGES.includes(cleaned as any)) {
-    return cleaned;
-  }
-
-  const lower = String(rawStage || "").toLowerCase();
-
-  if (lower.includes("payments") || lower.includes("invoice") || lower.includes("station 3")) {
-    return "PACKAGING STAGE";
-  }
-
-  if (lower.includes("browning") || lower.includes("station 5")) {
-    return "BROWNING STAGE";
-  }
-
-  if (
-    lower.includes("stapling") ||
-    lower.includes("padding") ||
-    lower.includes("station 4")
-  ) {
-    return "STAPLING/PADDING STAGE";
-  }
-
-  if (lower.includes("collating") || lower.includes("station 2")) {
-    return "COLLATING STAGE";
-  }
-
-  if (lower.includes("running") || lower.includes("printing") || lower.includes("station 1")) {
-    return "RUNNING STAGE";
-  }
-
-  if (lower.includes("pre-printing") || lower.includes("pre printing") || lower.includes("station 0")) {
-    return "PRE-PRINTING STAGE";
-  }
-
-  return cleaned;
+  return normalizeStage(rawStage);
 }
 
 export async function handleUpdateRequest(body: any) {
@@ -212,30 +177,6 @@ export async function handleUpdateRequest(body: any) {
       { error: "Order not found" },
       { status: 404 }
     );
-  }
-
-  if (process.env.ZAPIER_WEBHOOK_URL) {
-    try {
-      const resp = await fetch(process.env.ZAPIER_WEBHOOK_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          event: "order_stage_updated",
-          orderId: updatedOrder.orderId,
-          stage: updatedOrder.stage,
-          updatedAt: updatedOrder.updatedAt,
-          order: updatedOrder,
-        }),
-      });
-
-      if (!resp.ok) {
-        console.error(`Zapier webhook failed: ${resp.status} ${resp.statusText}`);
-      }
-    } catch (zapierError) {
-      console.error("Zapier webhook error:", zapierError);
-    }
   }
 
   return NextResponse.json({

@@ -129,7 +129,7 @@ export default function TrackClient({
                       {order.stage}
                     </p>
                   </div>
-                  {order.stage === "PACKAGING STAGE" ? (
+                  {order.stage === STAGES[STAGES.length - 1] ? (
                     <div className="rounded-2xl bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300">
                       Order Completed
                     </div>
