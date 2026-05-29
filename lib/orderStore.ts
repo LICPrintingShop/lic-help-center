@@ -1,7 +1,4 @@
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
-
+import prisma from "./prisma";
 import { ORDER_STAGES, OrderStage, isOrderStage } from "./stages";
 
 export type OrderRecord = {
@@ -52,31 +49,6 @@ const STAGE_ALIASES: Record<string, OrderStage> = {
   "packaging": "LABELLING & PACKAGING",
 };
 
-const ordersPath = process.env.ORDER_DB_PATH
-  ? path.resolve(process.env.ORDER_DB_PATH)
-  : process.env.VERCEL
-  ? path.join(os.tmpdir(), "lic-help-center-orders.json")
-  : path.join(process.cwd(), "data", "orders.json");
-
-async function ensureOrdersFile() {
-  try {
-    await fs.access(ordersPath);
-  } catch {
-    await fs.mkdir(path.dirname(ordersPath), { recursive: true });
-    await fs.writeFile(ordersPath, "[]", "utf8");
-  }
-}
-
-export async function readOrders(): Promise<OrderRecord[]> {
-  await ensureOrdersFile();
-  const file = await fs.readFile(ordersPath, "utf8");
-  return JSON.parse(file || "[]") as OrderRecord[];
-}
-
-export async function writeOrders(orders: OrderRecord[]) {
-  await ensureOrdersFile();
-  await fs.writeFile(ordersPath, JSON.stringify(orders, null, 2), "utf8");
-}
 
 export function normalizeStage(stage: string): OrderStage {
   const cleaned = String(stage || "").trim();
@@ -120,37 +92,92 @@ export function getCurrentStageFromCheckedItems(items: Array<string | undefined>
 export async function createOrder(
   data: Omit<OrderRecord, "orderId" | "createdAt" | "updatedAt">
 ) {
-  const orders = await readOrders();
   const orderId = `LIC-${Date.now().toString().slice(-6)}-${Math.floor(
     Math.random() * 900 + 100
   )}`;
-  const record: OrderRecord = {
-    ...data,
-    orderId,
-    stage: normalizeStage(data.stage || "PRE-PRINTING STAGE"),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+
+  const stage = normalizeStage(data.stage || "");
+  const record = await prisma.order.create({
+    data: {
+      orderId,
+      tin: data.tin,
+      taxType: data.taxType,
+      entityType: data.entityType,
+      tradeName: data.tradeName,
+      address: data.address,
+      phone: data.phone,
+      email: data.email,
+      printingOption: data.printingOption,
+      status: data.status,
+      stage,
+      proofFileName: data.proofFileName,
+    },
+  });
+
+  await prisma.orderHistory.create({
+    data: {
+      orderId,
+      stage,
+      note: "Order created",
+    },
+  });
+
+  return {
+    ...record,
+    createdAt: record.createdAt.toISOString(),
+    updatedAt: record.updatedAt.toISOString(),
   };
-  orders.push(record);
-  await writeOrders(orders);
-  return record;
 }
 
 export async function getOrderById(orderId: string) {
-  const orders = await readOrders();
-  return orders.find((order) => order.orderId === orderId) || null;
-}
-
-export async function updateOrderStage(orderId: string, newStage: string) {
-  const orders = await readOrders();
-  const order = orders.find((o) => o.orderId === orderId);
+  const order = await prisma.order.findUnique({
+    where: { orderId },
+    include: { history: true },
+  });
 
   if (!order) {
     return null;
   }
 
-  order.stage = normalizeStage(newStage);
-  order.updatedAt = new Date().toISOString();
-  await writeOrders(orders);
-  return order;
+  return {
+    ...order,
+    createdAt: order.createdAt.toISOString(),
+    updatedAt: order.updatedAt.toISOString(),
+    history: order.history.map((item) => ({
+      ...item,
+      createdAt: item.createdAt.toISOString(),
+    })),
+  };
+}
+
+export async function updateOrderStage(orderId: string, newStage: string) {
+  const stage = normalizeStage(newStage);
+  const existingOrder = await prisma.order.findUnique({
+    where: { orderId },
+  });
+
+  if (!existingOrder) {
+    return null;
+  }
+
+  const order = await prisma.order.update({
+    where: { orderId },
+    data: {
+      stage,
+    },
+  });
+
+  await prisma.orderHistory.create({
+    data: {
+      orderId,
+      stage,
+      note: "Stage updated from Trello",
+    },
+  });
+
+  return {
+    ...order,
+    createdAt: order.createdAt.toISOString(),
+    updatedAt: order.updatedAt.toISOString(),
+  };
 }
