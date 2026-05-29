@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function OrderPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -10,9 +10,16 @@ export default function OrderPage() {
   const [orderId, setOrderId] = useState("");
   const [orderStage, setOrderStage] = useState("PRE-PRINTING STAGE");
   const [errorMessage, setErrorMessage] = useState("");
+  const isSubmittingRef = useRef(false);
 
   async function handleSubmit(e: any) {
     e.preventDefault();
+    
+    if (isSubmittingRef.current) {
+      return;
+    }
+    
+    isSubmittingRef.current = true;
     setLoading(true);
     setErrorMessage("");
 
@@ -26,6 +33,7 @@ export default function OrderPage() {
       (!proofFile || proofFile.size === 0)
     ) {
       alert("Proof of payment is required.");
+      isSubmittingRef.current = false;
       setLoading(false);
       return;
     }
@@ -70,6 +78,7 @@ export default function OrderPage() {
       console.error(err);
       setErrorMessage(err?.message || "Failed to send order.");
     } finally {
+      isSubmittingRef.current = false;
       setLoading(false);
     }
   }
