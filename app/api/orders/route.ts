@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createOrder, getOrderById } from "@/lib/orderStore";
+import { createOrder, getOrderById, normalizeStage } from "@/lib/orderStore";
 import { sendOrderNotification } from "@/lib/email";
 
 export async function POST(request: Request) {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       email: String(body.email),
       printingOption: String(body.printingOption),
       status: String(body.status),
-      stage: String(body.stage || "PRE-PRINTING STAGE"),
+      stage: normalizeStage(String(body.stage || "PRE-PRINTING STAGE")),
       proofFileName: String(body.proofFileName || "No proof uploaded"),
     });
 

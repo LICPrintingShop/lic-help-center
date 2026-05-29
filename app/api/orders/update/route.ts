@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { ORDER_STAGES } from "@/lib/stages";
 import {
-  ORDER_STAGES,
   getCurrentStageFromCheckedItems,
   normalizeStage,
   updateOrderStage,

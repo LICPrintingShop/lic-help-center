@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ORDER_STAGES } from "@/lib/orderStore";
-import type { OrderStage } from "@/lib/orderStore";
+import { ORDER_STAGES } from "@/lib/stages";
+import type { OrderStage } from "@/lib/stages";
 
 type OrderResult = {
   orderId: string;

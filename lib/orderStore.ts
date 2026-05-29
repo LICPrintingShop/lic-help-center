@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import os from "os";
 import path from "path";
 
-export type OrderStage = (typeof ORDER_STAGES)[number];
+import { ORDER_STAGES, OrderStage, isOrderStage } from "./stages";
 
 export type OrderRecord = {
   orderId: string;
@@ -20,15 +20,6 @@ export type OrderRecord = {
   createdAt: string;
   updatedAt: string;
 };
-
-export const ORDER_STAGES = [
-  "PRE-PRINTING STAGE",
-  "RUNNING STAGE",
-  "COLLATING STAGE",
-  "STAPLING/PADDING STAGE",
-  "BROWNING STAGE",
-  "PACKAGING STAGE",
-] as const;
 
 const STAGE_ALIASES: Record<string, OrderStage> = {
   "pre-printing": "PRE-PRINTING STAGE",
@@ -73,10 +64,6 @@ export async function readOrders(): Promise<OrderRecord[]> {
 export async function writeOrders(orders: OrderRecord[]) {
   await ensureOrdersFile();
   await fs.writeFile(ordersPath, JSON.stringify(orders, null, 2), "utf8");
-}
-
-export function isOrderStage(value: string): value is OrderStage {
-  return ORDER_STAGES.includes(value as OrderStage);
 }
 
 export function normalizeStage(stage: string): OrderStage {
